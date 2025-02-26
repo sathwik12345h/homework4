@@ -1,46 +1,24 @@
-"""Calculator module that provides basic arithmetic operations with history tracking."""
-from typing import List, Tuple
-
-class Calculation:
-    def __init__(self, operation: str, operand1: float, operand2: float, result: float):
-        self.operation = operation
-        self.operand1 = operand1
-        self.operand2 = operand2
-        self.result = result
+from typing import Dict, Type
+from .commands.add_command import AddCommand
+from .commands.subtract_command import SubtractCommand
+from .commands.multiply_command import MultiplyCommand
+from .commands.divide_command import DivideCommand
+from .commands.command import Command
 
 class Calculator:
-    history: List[Calculation] = []
+    """Calculator class using the Command Pattern."""
 
-    @staticmethod
-    def add(a: float, b: float) -> float:
-        result = a + b
-        Calculator._store_calculation("add", a, b, result)
-        return result
-
-    @staticmethod
-    def subtract(a: float, b: float) -> float:
-        result = a - b
-        Calculator._store_calculation("subtract", a, b, result)
-        return result
-
-    @staticmethod
-    def multiply(a: float, b: float) -> float:
-        result = a * b
-        Calculator._store_calculation("multiply", a, b, result)
-        return result
-
-    @staticmethod
-    def divide(a: float, b: float) -> float:
-        if b == 0:
-            raise ZeroDivisionError("Cannot divide by zero.")
-        result = a / b
-        Calculator._store_calculation("divide", a, b, result)
-        return result
+    commands: Dict[str, Type[Command]] = {
+        "add": AddCommand(),
+        "subtract": SubtractCommand(),
+        "multiply": MultiplyCommand(),
+        "divide": DivideCommand(),
+    }
 
     @classmethod
-    def _store_calculation(cls, operation: str, a: float, b: float, result: float) -> None:
-        cls.history.append(Calculation(operation, a, b, result))
-
-    @classmethod
-    def clear_history(cls) -> None:
-        cls.history.clear()
+    def execute(cls, operation: str, a: float, b: float) -> float:
+        """Executes a command based on the operation name."""
+        command = cls.commands.get(operation)
+        if not command:
+            raise ValueError(f"Unknown operation: {operation}")
+        return command.execute(a, b)
